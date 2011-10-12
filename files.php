@@ -89,7 +89,7 @@ class FileManager extends Backend
 		if($this->Input->get('f'))
 		{
 			$f = $this->Input->get('f');
-			$f = urldecode($f);
+			$f = html_entity_decode(urldecode($f));
 			$f = str_replace('==PUNKT==', '.', $f);
 			if(file_exists(TL_ROOT.'/'.$f))
 			{
