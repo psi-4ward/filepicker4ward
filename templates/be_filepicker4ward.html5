@@ -16,10 +16,18 @@
 <!--[if IE]><link rel="stylesheet" href="<?php echo TL_SCRIPT_URL; ?>system/themes/<?php echo $this->theme; ?>/iefixes.css" media="screen"><![endif]-->
 <?php echo $this->stylesheets; ?>
 <style media="screen">
+body {
+	background-image: none;
+}
 #container {
-  margin:0 auto;
-  padding:12px 0;
-  width:750px;
+	  margin:0 auto;
+	  padding:12px 0;
+	  width:750px;
+}
+#main {
+	left:0px;
+	float:none;
+	min-height: 0px;
 }
 #tl_helpBox {
   margin-left:-353px;
@@ -72,18 +80,31 @@ function insertFile(el)
 
 	var erg = el.get('href').match(/id=([^&]+)/);
 	parentInput.value = erg[1];
+	parentImg.set('title',erg[1]);
 	var imgs = el.getParent('li').getElements('img');
 	if(imgs.length > 2 && imgs[1] != null)
 	{
 		parentImg.set('src',imgs[1].get('src'));
+		parent.Mediabox.close();
 	}
 	else
 	{
 		var ext = el.get('href').match(/id=[^\.]+\.([a-zA-Z0-9]+)/);
-		parentImg.set('src','system/modules/filepicker4ward/html/icons/'+ext[1]+'.png');
+		var imgFile = 'system/modules/filepicker4ward/html/icons/'+ext[1]+'.png';
+		Asset.image(imgFile,{
+			onLoad: function()
+			{
+				parentImg.set('src',imgFile);
+				parent.Mediabox.close();
+			},
+			onError: function()
+			{
+				parentImg.set('src','system/modules/filepicker4ward/html/default.png');
+				parent.Mediabox.close();
+			}
+		});
+
 	}
-	parentImg.set('title',erg[1]);
-	parent.Mediabox.close();
 	return false;
 }
 </script>
