@@ -75,6 +75,7 @@ window.addEvent('domready',function(){
 
 function insertFile(el)
 {
+	el = $(el);
 	var parentInput = parent.document.getElement('input[name="<?php echo urldecode($this->Input->get('fld'));?>"]');
 	var parentImg = parentInput.getParent().getElement('img.preview');
 
