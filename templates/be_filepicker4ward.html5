@@ -82,15 +82,30 @@ function insertFile(el)
 	var erg = el.get('href').match(/id=([^&]+)/);
 	parentInput.value = erg[1];
 	parentImg.set('title',erg[1]);
+
+	// try to use preview image
 	var imgs = el.getParent('li').getElements('img');
-	if(imgs.length > 2 && imgs[1] != null)
+	for(var i=0;i<imgs.length;i++)
 	{
-		parentImg.set('src',imgs[1].get('src'));
+		if(imgs[i] != null && imgs[i].get('src').indexOf('system/html') != -1)
+		{
+			parentImg.set('src',imgs[i].get('src'));
+			parent.Mediabox.close();
+			return false;
+		}
+	}
+
+	// show a icon
+	var ext = el.get('href').match(/id=[^\.]+\.([a-zA-Z0-9]+)/);
+	if(ext == null)
+	{
+		// probably a folder has been choosen
+		parentImg.set('src','system/modules/filepicker4ward/html/folder.png');
 		parent.Mediabox.close();
 	}
 	else
 	{
-		var ext = el.get('href').match(/id=[^\.]+\.([a-zA-Z0-9]+)/);
+		// choose the icon for this filetype
 		var imgFile = 'system/modules/filepicker4ward/html/icons/'+ext[1]+'.png';
 		Asset.image(imgFile,{
 			onLoad: function()
@@ -104,8 +119,9 @@ function insertFile(el)
 				parent.Mediabox.close();
 			}
 		});
-
 	}
+
+
 	return false;
 }
 </script>
