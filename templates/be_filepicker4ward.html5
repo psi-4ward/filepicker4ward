@@ -69,15 +69,27 @@ var REQUEST_TOKEN = '<?php echo REQUEST_TOKEN; ?>';
 </div>
 <script>
 window.addEvent('domready',function(){
-	$('tl_buttons').getElement('a.header_new_folder').destroy();
-	$('tl_buttons').set('html',$('tl_buttons').get('html').replace("&nbsp; :: &nbsp; ",''));
+	// $('tl_buttons').getElement('a.header_new_folder').destroy();
+	// $('tl_buttons').set('html',$('tl_buttons').get('html').replace("&nbsp; :: &nbsp; ",''));
+	$('tl_buttons').getElement('a.header_new_folder').setStyles({
+		'background-image':'url(system/themes/default/images/delete.gif)'
+	}).set('text','<?php echo $GLOBALS['TL_LANG']['MSC']['resetSelected'];?> ').set('href','javascript:clearChoice();');
+	console.log($('tl_buttons').getElement('a.header_new_folder'));
 });
+
+var parentInput = parent.document.getElement('input[name="<?php echo urldecode($this->Input->get('fld'));?>"]');
+var parentImg = parentInput.getParent().getElement('img.preview');
+
+function clearChoice()
+{
+	parentImg.set('src','system/modules/filepicker4ward/html/nofile.png');
+	parentInput.value = '';
+	parent.Mediabox.close();
+}
 
 function insertFile(el)
 {
 	el = $(el);
-	var parentInput = parent.document.getElement('input[name="<?php echo urldecode($this->Input->get('fld'));?>"]');
-	var parentImg = parentInput.getParent().getElement('img.preview');
 
 	var erg = el.get('href').match(/id=([^&]+)/);
 	parentInput.value = erg[1];
