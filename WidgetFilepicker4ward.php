@@ -24,7 +24,27 @@ class WidgetFilepicker4ward extends Widget
 	 */
 	protected $strTemplate = 'be_widget';
 
-	
+
+	/**
+	 * Add specific attributes
+	 * @param string
+	 * @param mixed
+	 */
+	public function __set($strKey, $varValue)
+	{
+		switch ($strKey)
+		{
+			case 'mandatory':
+				$this->arrConfiguration['mandatory'] = $varValue ? true : false;
+				break;
+
+			default:
+				parent::__set($strKey, $varValue);
+				break;
+		}
+	}
+
+
 	/**
 	 * Validate
 	 * @param mixed
@@ -32,6 +52,42 @@ class WidgetFilepicker4ward extends Widget
 	 */
 	protected function validator($varInput)
 	{
+		$this->import('BackendUser', 'User');
+		
+		// Reset the field
+		if ($varInput == '')
+		{
+			return parent::validator($varInput);
+		}
+
+		// Check the path
+		elseif (strlen($GLOBALS['TL_DCA'][$this->strTable]['fields'][$this->strField]['eval']['path']))
+		{
+			$rgxp = '/^'. preg_quote($GLOBALS['TL_DCA'][$this->strTable]['fields'][$this->strField]['eval']['path'], '/') .'\//i';
+
+			foreach ((array) $varInput as $strFile)
+			{
+				if (!preg_match($rgxp, $strFile))
+				{
+					$this->addError('File or folder "'.$strFile.'" is not mounted!');
+					$this->log('File or folder "'.$strFile.'" is not mounted (hacking attempt)', 'FileTree validator()', TL_ERROR);
+				}
+			}
+		}
+
+		// Check the filemounts
+		elseif (!$this->User->isAdmin)
+		{
+			foreach ((array) $varInput as $strFile)
+			{
+				if (!$this->User->hasAccess($strFile, 'filemounts'))
+				{
+					$this->addError('File or folder "'.$strFile.'" is not mounted!');
+					$this->log('File or folder "'.$strFile.'" is not mounted (hacking attempt)', 'FileTree validator()', TL_ERROR);
+				}
+			}
+		}
+
 		return parent::validator($varInput);
 	}
 
