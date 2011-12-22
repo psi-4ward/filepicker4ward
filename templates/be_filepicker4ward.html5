@@ -92,7 +92,7 @@ function insertFile(el)
 	el = $(el);
 
 	var erg = el.get('href').match(/id=([^&]+)/);
-	parentInput.value = erg[1];
+	parentInput.value = decodeURI(erg[1]);
 	parentImg.set('title',erg[1]);
 
 	// try to use preview image

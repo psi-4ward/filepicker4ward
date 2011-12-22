@@ -53,7 +53,7 @@ class WidgetFilepicker4ward extends Widget
 	protected function validator($varInput)
 	{
 		$this->import('BackendUser', 'User');
-		
+
 		// Reset the field
 		if ($varInput == '')
 		{
@@ -112,20 +112,20 @@ class WidgetFilepicker4ward extends Widget
 		if(!strlen($var))
 			return '<img src="system/modules/filepicker4ward/html/nofile.png" class="preview" alt="">';
 
-		if(is_dir(TL_ROOT.'/'.$this->varValue))
+		if(is_dir(TL_ROOT.'/'.$var))
 		{
 			return '<img src="system/modules/filepicker4ward/html/folder.png" class="preview" alt="">';
 		}
 
-		$objFile = new File($this->varValue);
+		$objFile = new File($var);
 		if ($GLOBALS['TL_CONFIG']['thumbnails'] && $objFile->isGdImage && $objFile->height > 0 && $objFile->width > 0 && $objFile->height <= $GLOBALS['TL_CONFIG']['gdMaxImgHeight'] && $objFile->width <= $GLOBALS['TL_CONFIG']['gdMaxImgWidth'])
 		{
 			$_height = ($objFile->height < 70) ? $objFile->height : 70;
 			$_width = (($objFile->width * $_height / $objFile->height) > 400) ? 90 : '';
-			return '<img src="'. $this->getImage($this->varValue, $_width, $_height) . '" alt="" class="preview">';
+			return '<img src="'. $this->getImage($var, $_width, $_height) . '" alt="" class="preview">';
 		}			
 			
-		$ext = strtolower(substr($this->varValue,strrpos($this->varValue,'.')+1));
+		$ext = strtolower(substr($this->varValue,strrpos($var,'.')+1));
 		if(file_exists(TL_ROOT."/system/modules/filepicker4ward/html/icons/".$ext.'.png'))
 		{
 			return '<img src="system/modules/filepicker4ward/html/icons/'.$ext.'.png" class="preview" alt="">';	
