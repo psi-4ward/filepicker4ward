@@ -20,7 +20,6 @@ $GLOBALS['TL_DCA']['tl_files_chooser'] = array
 	'config' => array
 	(
 		'dataContainer'               => 'Folder',
-		'uploadScript'                => 'fancyUpload',
 		'closed'					  => true,
 		'onload_callback' => array
 		(
