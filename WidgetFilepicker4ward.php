@@ -98,7 +98,7 @@ class WidgetFilepicker4ward extends Widget
 	 */
 	public function generate()
 	{
-		return '<a href="system/modules/filepicker4ward/files.php" onclick="Mediabox.open([[this.get(\'href\')+\'?ext='.urlencode($this->extensions).'&f=\'+encodeURI(this.getNext(\'input\').get(\'value\').replace(\'.\',\'==PUNKT==\'))+\'&fld=\'+encodeURI(this.getNext(\'input\').get(\'name\')),\'\',\'800 600\']],0);return false;" title="'.$this->varValue.'">'.$this->getThumb($this->varValue).'</a>'.
+		return '<a href="system/modules/filepicker4ward/files.php" onclick="Mediabox.open([[this.get(\'href\')+\'?ext='.urlencode($this->extensions).'&f=\'+encodeURI(this.getNext(\'input\').get(\'value\').replace(\'.\',\'==PUNKT==\'))+\'&fld=\'+encodeURI(this.getNext(\'input\').get(\'name\'))+\''.(($this->filesOnly)?'&filesOnly=1':'').'\',\'\',\'800 600\']],0);return false;" title="'.$this->varValue.'">'.$this->getThumb($this->varValue).'</a>'.
 			sprintf('<input type="hidden" name="%s" id="ctrl_%s" class="tl_text" value="%s" onfocus="Backend.getScrollOffset();">',
 							$this->strName,
 							$this->strId,

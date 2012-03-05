@@ -123,7 +123,7 @@ function insertFile(el)
 	var erg = el.get('href').match(/id=([^&]+)/);
 	parentInput.value = decodeURI(erg[1]);
 	parentImg.set('title',erg[1]);
-
+	
 	// try to use preview image
 	var imgs = el.getParent('li').getElements('img');
 	for(var i=0;i<imgs.length;i++)
@@ -172,11 +172,11 @@ function insertFile(el)
 		$this->loadDataContainer('tl_files');
 		$GLOBALS['TL_DCA']['tl_files']['list']['operations']['choose'] =  array
 		(
-			'label'               => array('Datei verwenden', 'Diese Datei auswählen'),
+			'label'               => &$GLOBALS['TL_LANG']['tl_files']['choose'],
 			'href'	  			  => '',
 			'attributes'		  => 'onclick="javascript:return insertFile(this);"',
-			'icon'				  => 'system/modules/filepicker4ward/html/choose.png'
-
+			'icon'				  => 'system/modules/filepicker4ward/html/choose.png',
+			'button_callback'     => array('FileManager', 'generateChooseButton')
 		);
 
 		// set valid filetypes
@@ -243,6 +243,24 @@ function insertFile(el)
 		$this->Template->loadingData = $GLOBALS['TL_LANG']['MSC']['loadingData'];
 
 		$this->Template->output();
+	}
+
+
+	/**
+	 * Return the choose button respecting the filesOnly attribute
+	 * @param $row
+	 * @param $href
+	 * @param $label
+	 * @param $title
+	 * @param $icon
+	 * @param $attributes
+	 * @return string
+	 */
+	public function generateChooseButton($row, $href, $label, $title, $icon, $attributes)
+	{
+		if($this->Input->get('filesOnly') && is_dir(TL_ROOT.'/'.$row['id']))return '';
+
+		return '<a href="'.$this->addToUrl('id='.$row['id']).'" title="'.specialchars($title).'"'.$attributes.'>'.$this->generateImage($icon, $label).'</a> ';
 	}
 }
 
