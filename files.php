@@ -1,11 +1,30 @@
 <?php
 
 /**
+ * Contao Open Source CMS
+ * Copyright (C) 2005-2012 Leo Feyer
+ *
+ * Formerly known as TYPOlight Open Source CMS.
+ *
+ * This program is free software: you can redistribute it and/or
+ * modify it under the terms of the GNU Lesser General Public
+ * License as published by the Free Software Foundation, either
+ * version 3 of the License, or (at your option) any later version.
+ * 
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU
+ * Lesser General Public License for more details.
+ * 
+ * You should have received a copy of the GNU Lesser General Public
+ * License along with this program. If not, please visit the Free
+ * Software Foundation website at <http://www.gnu.org/licenses/>.
  *
  * PHP version 5
- * @copyright  4ward.media 2011
- * @author     Christoph Wiechert <christoph.wiechert@4wardmedia.de>
- * @package    filepicker4ward
+ * @copyright  Leo Feyer 2005-2012
+ * @author     Leo Feyer <http://www.contao.org>
+ * @package    Backend
+ * @license    LGPL
  * @filesource
  */
 
@@ -21,10 +40,9 @@ require_once('../../initialize.php');
  * Class FileManager
  *
  * Popup file manager controller.
- * @copyright  Leo Feyer 2005-2011
+ * @copyright  Leo Feyer 2005-2012
  * @author     Leo Feyer <http://www.contao.org>
- * @author	   Christoph Wiechert
- * @package    filepicker4ward
+ * @package    Controller
  */
 class FileManager extends Backend
 {
@@ -39,16 +57,19 @@ class FileManager extends Backend
 	/**
 	 * Initialize the controller
 	 * 
-	 * 1. Import user
-	 * 2. Call parent constructor
-	 * 3. Authenticate user
-	 * 4. Load language files
+	 * 1. Import the user
+	 * 2. Call the parent constructor
+	 * 3. Authenticate the user
+	 * 4. Load the language files
 	 * DO NOT CHANGE THIS ORDER!
 	 */
 	public function __construct()
 	{
 		$this->import('BackendUser', 'User');
 		parent::__construct();
+
+		// System::getReferer checks for the scriptName → hack it ;)
+		$this->Environment->script = 'contao/files.php';
 
 		$this->User->authenticate();
 
@@ -58,29 +79,111 @@ class FileManager extends Backend
 
 
 	/**
-	 * Run controller and parse the login template
+	 * Run the controller and parse the login template
 	 */
 	public function run()
 	{
-		$this->Template = new BackendTemplate('be_filepicker4ward');
-		$this->Template->main = '';
+		//
+		$GLOBALS['TL_MOOTOOLS'][] = "
+<script>
+window.addEvent('domready',function(){
 
-		if ($this->Environment->isAjaxRequest)
-		{
-			$this->objAjax = new Ajax($this->Input->post('action'));
-			$this->objAjax->executePreActions();
+	// add clear selection button
+	var clearBtn = $('tl_buttons').getElement('a.header_new_folder').clone();
+	clearBtn.setStyles({
+			'background-image':'url(system/themes/default/images/delete.gif)'
+		})
+		.set('text','{$GLOBALS['TL_LANG']['MSC']['resetSelected']}')
+		.set('href','javascript:clearChoice();');
+
+	var clearBtnContainer = new Element('div',{
+		'id':'tl_buttons_a',
+		'styles':{
+			'margin-top':'5px'
 		}
-		$this->loadDataContainer('tl_files_chooser');
+	});
+	clearBtn.inject(clearBtnContainer);
+	clearBtnContainer.inject($('tl_buttons'),'after');
+});
 
-		$dataContainer = 'DC_' . $GLOBALS['TL_DCA']['tl_files_chooser']['config']['dataContainer'];
-		
+var parentInput = parent.document.getElement('input[name=\"".urldecode($this->Input->get('fld'))."\"]');
+var parentImg = parentInput.getParent().getElement('img.preview');
+
+function clearChoice()
+{
+	parentImg.set('src','system/modules/filepicker4ward/html/nofile.png');
+	parentInput.value = '';
+	parent.Mediabox.close();
+}
+
+function insertFile(el)
+{
+	el = $(el);
+
+	var erg = el.get('href').match(/id=([^&]+)/);
+	parentInput.value = decodeURI(erg[1]);
+	parentImg.set('title',erg[1]);
+
+	// try to use preview image
+	var imgs = el.getParent('li').getElements('img');
+	for(var i=0;i<imgs.length;i++)
+	{
+		if(imgs[i] != null && imgs[i].get('src').indexOf('system/html') != -1)
+		{
+			parentImg.set('src',imgs[i].get('src'));
+			parent.Mediabox.close();
+			return false;
+		}
+	}
+
+	// show a icon
+	var ext = el.get('href').match(/id=[^\.]+\.([a-zA-Z0-9]+)/);
+	if(ext == null)
+	{
+		// probably a folder has been choosen
+		parentImg.set('src','system/modules/filepicker4ward/html/folder.png');
+		parent.Mediabox.close();
+	}
+	else
+	{
+		// choose the icon for this filetype
+		var imgFile = 'system/modules/filepicker4ward/html/icons/'+ext[1]+'.png';
+		Asset.image(imgFile,{
+			onLoad: function()
+			{
+				parentImg.set('src',imgFile);
+				parent.Mediabox.close();
+			},
+			onError: function()
+			{
+				parentImg.set('src','system/modules/filepicker4ward/html/default.png');
+				parent.Mediabox.close();
+			}
+		});
+	}
+
+
+	return false;
+}
+</script>
+";
+
+		// insert select-choice button
+		$this->loadDataContainer('tl_files');
+		$GLOBALS['TL_DCA']['tl_files']['list']['operations']['choose'] =  array
+		(
+			'label'               => array('Datei verwenden', 'Diese Datei auswählen'),
+			'href'	  			  => '',
+			'attributes'		  => 'onclick="javascript:return insertFile(this);"',
+			'icon'				  => 'system/modules/filepicker4ward/html/choose.png'
+
+		);
+
 		// set valid filetypes
 		if($this->Input->get('ext') && preg_match("~^[a-z0-9,]+~i",$this->Input->get('ext')))
 		{
-			$GLOBALS['TL_DCA']['tl_files_chooser']['config']['validFileTypes'] = $this->Input->get('ext');
+			$GLOBALS['TL_DCA']['tl_files']['config']['validFileTypes'] = $this->Input->get('ext');
 		}
-		
-		require(sprintf('%s/system/drivers/%s.php', TL_ROOT, $dataContainer));
 
 		// Hack to display the expanded tree
 		$sessionOld = $this->Session->getData();
@@ -104,20 +207,23 @@ class FileManager extends Backend
 		}
 		$this->Session->setData($sessionTmp);
 
-		// generate the treee with DC_Folder
-		$dc = new $dataContainer('tl_files_chooser');
-		$this->Template->main .= $dc->showAll();
 
-		// restore the session-data for ModuleFiles
-		$this->Session->setData($sessionOld);
-		
-		// AJAX request
-		if ($_POST && $this->Environment->isAjaxRequest)
+
+
+		$this->Template = new BackendTemplate('be_files');
+		$this->Template->main = '';
+
+		// Ajax request
+		if ($this->Environment->isAjaxRequest)
 		{
-			$this->objAjax->executePostActions($dc);
+			$this->objAjax = new Ajax($this->Input->post('action'));
+			$this->objAjax->executePreActions();
 		}
-				
-		if (!strlen($this->Template->headline))
+
+		$this->Template->main .= $this->getBackendModule('files');
+
+		// Default headline
+		if ($this->Template->headline == '')
 		{
 			$this->Template->headline = $GLOBALS['TL_CONFIG']['websiteTitle'];
 		}
@@ -132,9 +238,9 @@ class FileManager extends Backend
 		$this->Template->skipNavigation = $GLOBALS['TL_LANG']['MSC']['skipNavigation'];
 		$this->Template->request = ampersand($this->Environment->request);
 		$this->Template->top = $GLOBALS['TL_LANG']['MSC']['backToTop'];
-		$this->Template->be27 = !$GLOBALS['TL_CONFIG']['oldBeTheme'];
 		$this->Template->expandNode = $GLOBALS['TL_LANG']['MSC']['expandNode'];
 		$this->Template->collapseNode = $GLOBALS['TL_LANG']['MSC']['collapseNode'];
+		$this->Template->loadingData = $GLOBALS['TL_LANG']['MSC']['loadingData'];
 
 		$this->Template->output();
 	}
@@ -142,7 +248,7 @@ class FileManager extends Backend
 
 
 /**
- * Instantiate controller
+ * Instantiate the controller
  */
 $objFileManager = new FileManager();
 $objFileManager->run();

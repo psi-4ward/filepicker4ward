@@ -106,7 +106,7 @@ class WidgetFilepicker4ward extends Widget
 					);
 	}	
 	
-	
+
 	protected function getThumb($var)
 	{
 		if(!strlen($var))
@@ -118,7 +118,7 @@ class WidgetFilepicker4ward extends Widget
 		}
 
 		$objFile = new File($this->varValue);
-		if ($GLOBALS['TL_CONFIG']['thumbnails'] && $objFile->isGdImage && $objFile->height > 0 && $objFile->width > 0 && $objFile->height <= $GLOBALS['TL_CONFIG']['gdMaxImgHeight'] && $objFile->width <= $GLOBALS['TL_CONFIG']['gdMaxImgWidth'])
+		if (file_exists(TL_ROOT.'/'.$this->varValue) && $GLOBALS['TL_CONFIG']['thumbnails'] && $objFile->isGdImage && $objFile->height > 0 && $objFile->width > 0 && $objFile->height <= $GLOBALS['TL_CONFIG']['gdMaxImgHeight'] && $objFile->width <= $GLOBALS['TL_CONFIG']['gdMaxImgWidth'])
 		{
 			$_height = ($objFile->height < 70) ? $objFile->height : 70;
 			$_width = (($objFile->width * $_height / $objFile->height) > 400) ? 90 : '';
