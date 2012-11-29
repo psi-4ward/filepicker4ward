@@ -117,8 +117,13 @@ class WidgetFilepicker4ward extends Widget
 			return '<img src="system/modules/filepicker4ward/html/folder.png" class="preview" alt="">';
 		}
 
+		if(!file_exists(TL_ROOT.'/'.$this->varValue))
+		{
+			return '<img src="system/modules/filepicker4ward/html/notfound.png" class="preview" alt="">';
+		}
+
 		$objFile = new File($this->varValue);
-		if (file_exists(TL_ROOT.'/'.$this->varValue) && $GLOBALS['TL_CONFIG']['thumbnails'] && $objFile->isGdImage && $objFile->height > 0 && $objFile->width > 0 && $objFile->height <= $GLOBALS['TL_CONFIG']['gdMaxImgHeight'] && $objFile->width <= $GLOBALS['TL_CONFIG']['gdMaxImgWidth'])
+		if ($GLOBALS['TL_CONFIG']['thumbnails'] && $objFile->isGdImage && $objFile->height > 0 && $objFile->width > 0 && $objFile->height <= $GLOBALS['TL_CONFIG']['gdMaxImgHeight'] && $objFile->width <= $GLOBALS['TL_CONFIG']['gdMaxImgWidth'])
 		{
 			$_height = ($objFile->height < 70) ? $objFile->height : 70;
 			$_width = (($objFile->width * $_height / $objFile->height) > 400) ? 90 : '';
