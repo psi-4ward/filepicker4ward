@@ -8,7 +8,7 @@
 /**
  * Helper class for filepicker4ward
  */
-class Filepicker4wardHelper extends System
+class Filepicker4wardHelper extends Controller
 {
 
 	/**
@@ -26,5 +26,23 @@ class Filepicker4wardHelper extends System
 				$GLOBALS['TL_DCA'][$table]['fields'][$name]['inputType'] = 'filepicker4ward';
 			}
 		}
+	}
+
+
+	/**
+	 * Return the choose button respecting the filesOnly attribute
+	 * @param $row
+	 * @param $href
+	 * @param $label
+	 * @param $title
+	 * @param $icon
+	 * @param $attributes
+	 * @return string
+	 */
+	public function generateChooseButton($row, $href, $label, $title, $icon, $attributes)
+	{
+		if($this->Input->get('filesOnly') && is_dir(TL_ROOT.'/'.$row['id']))return '';
+
+		return '<a href="'.$this->addToUrl('id='.$row['id']).'" title="'.specialchars($title).'"'.$attributes.'>'.$this->generateImage($icon, $label).'</a> ';
 	}
 }

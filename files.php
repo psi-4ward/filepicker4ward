@@ -168,48 +168,6 @@ function insertFile(el)
 </script>
 ";
 
-		// insert select-choice button
-		$this->loadDataContainer('tl_files');
-		$GLOBALS['TL_DCA']['tl_files']['list']['operations']['choose'] =  array
-		(
-			'label'               => &$GLOBALS['TL_LANG']['tl_files']['choose'],
-			'href'	  			  => '',
-			'attributes'		  => 'onclick="javascript:return insertFile(this);"',
-			'icon'				  => 'system/modules/filepicker4ward/html/choose.png',
-			'button_callback'     => array('FileManager', 'generateChooseButton')
-		);
-
-		// set valid filetypes
-		if($this->Input->get('ext') && preg_match("~^[a-z0-9,]+~i",$this->Input->get('ext')))
-		{
-			$GLOBALS['TL_DCA']['tl_files']['config']['validFileTypes'] = $this->Input->get('ext');
-		}
-
-		// Hack to display the expanded tree
-		$sessionOld = $this->Session->getData();
-		$sessionTmp = $sessionOld;
-		$sessionTmp['filetree'] = array();
-		if($this->Input->get('f'))
-		{
-			$f = $this->Input->get('f');
-			$f = html_entity_decode(urldecode($f));
-			$f = str_replace('==PUNKT==', '.', $f);
-			if(file_exists(TL_ROOT.'/'.$f))
-			{
-				$currFolder = TL_ROOT;
-				$pieces = explode('/', substr($f,0,strrpos($f,'/')));
-				foreach($pieces as $folder)
-				{
-					$currFolder .= '/'.$folder;
-					$sessionTmp['filetree'][md5($currFolder)] = 1;
-				}
-			}
-		}
-		$this->Session->setData($sessionTmp);
-
-
-
-
 		$this->Template = new BackendTemplate('be_files');
 		$this->Template->main = '';
 
@@ -218,6 +176,23 @@ function insertFile(el)
 		{
 			$this->objAjax = new Ajax($this->Input->post('action'));
 			$this->objAjax->executePreActions();
+		}
+
+		// insert select-choice button
+		$this->loadDataContainer('tl_files');
+		$GLOBALS['TL_DCA']['tl_files']['list']['operations']['choose'] =  array
+		(
+			'label'               => &$GLOBALS['TL_LANG']['tl_files']['choose'],
+			'href'	  			  => '',
+			'attributes'		  => 'onclick="javascript:return insertFile(this);"',
+			'icon'				  => 'system/modules/filepicker4ward/html/choose.png',
+			'button_callback'     => array('Filepicker4wardHelper', 'generateChooseButton')
+		);
+
+		// set valid filetypes
+		if($this->Input->get('ext') && preg_match("~^[a-z0-9,]+~i",$this->Input->get('ext')))
+		{
+			$GLOBALS['TL_DCA']['tl_files']['config']['validFileTypes'] = $this->Input->get('ext');
 		}
 
 		$this->Template->main .= $this->getBackendModule('files');
@@ -244,24 +219,6 @@ function insertFile(el)
 
 		$this->Template->output();
 	}
-
-
-	/**
-	 * Return the choose button respecting the filesOnly attribute
-	 * @param $row
-	 * @param $href
-	 * @param $label
-	 * @param $title
-	 * @param $icon
-	 * @param $attributes
-	 * @return string
-	 */
-	public function generateChooseButton($row, $href, $label, $title, $icon, $attributes)
-	{
-		if($this->Input->get('filesOnly') && is_dir(TL_ROOT.'/'.$row['id']))return '';
-
-		return '<a href="'.$this->addToUrl('id='.$row['id']).'" title="'.specialchars($title).'"'.$attributes.'>'.$this->generateImage($icon, $label).'</a> ';
-	}
 }
 
 
@@ -270,5 +227,3 @@ function insertFile(el)
  */
 $objFileManager = new FileManager();
 $objFileManager->run();
-
-?>
